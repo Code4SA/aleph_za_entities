@@ -15,7 +15,7 @@ DEFAULT_SCHEMA = '/entity/company.json#'
 
 
 class Company(Analyzer):
-
+    scheme = 'sacipc'
     origin = 'za_company'
 
     def prepare(self):
@@ -24,27 +24,27 @@ class Company(Analyzer):
             if collection.generate_entities:
                 self.collections.append(collection)
         self.disabled = not len(self.collections)
-        self.entities = defaultdict(list)
-        log.info("za_company init")
+        self.entities = []
 
     def on_text(self, text):
         if self.disabled or text is None:
             return
-        regexp = '([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)]*)*\s+' + \
+        regexp = '(([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)]*)*)\s+' + \
                  '\(Reg\w*\.? [Nn]\w+\.? (\d{4}/\d+/\d{2})\))'
         flags = re.MULTILINE
-        log.info("za_entities start")
         matches = re.findall(regexp, text, flags)
         for match in matches:
+            regno = match[3]
             full = re.sub('\s+', ' ', match[0], flags=re.MULTILINE)
-            log.info("%s  %s" % (match[2], full))
-        log.info("za_entities stop")
+            name = re.sub('\s+', ' ', match[1], flags=re.MULTILINE)
+            log.info("%s  %s" % (regno, name, full))
+            self.entities.append((regno, name, full))
 
-    def load_entity(self, name, schema):
-        identifier = name.lower().strip()
+    def load_entity(self, regno, name, full):
+        identifier = regno
         q = db.session.query(EntityIdentifier)
         q = q.order_by(EntityIdentifier.deleted_at.desc().nullsfirst())
-        q = q.filter(EntityIdentifier.scheme == self.origin)
+        q = q.filter(EntityIdentifier.scheme == self.scheme)
         q = q.filter(EntityIdentifier.identifier == identifier)
         ident = q.first()
         if ident is not None:
@@ -55,13 +55,17 @@ class Company(Analyzer):
                 return None
 
         data = {
-            'name': name,
-            '$schema': schema,
-            'state': Entity.STATE_PENDING,
+            'name': full,
+            '$schema': DEFAULT_SCHEMA,
             'identifiers': [{
-                'scheme': self.origin,
-                'identifier': identifier
-            }]
+                'scheme': self.scheme,
+                'identifier': regno
+            }],
+            'other_names': [
+                {'name': name},
+                {'name': regno},
+            ],
+            'company_number': regno
         }
         entity = Entity.save(data, self.collections)
         return entity.id
@@ -70,20 +74,13 @@ class Company(Analyzer):
         if self.disabled:
             return
 
-        output = []
-        for entity_name, schemas in self.entities.items():
-            schema = max(set(schemas), key=schemas.count)
-            output.append((entity_name, len(schemas), schema))
-
         self.document.delete_references(origin=self.origin)
-        for name, weight, schema in output:
-            entity_id = self.load_entity(name, schema)
-            if entity_id is None:
-                continue
+        for regno, full in self.entities:
+            entity_id = self.load_entity(regno, full)
             ref = Reference()
             ref.document_id = self.document.id
             ref.entity_id = entity_id
             ref.origin = self.origin
-            ref.weight = weight
+            ref.weight = 1
             db.session.add(ref)
-        log.info('za_companies extraced %s entities.', len(output))
+        log.info('za_companies extraced %s entities.', len(self.entities))

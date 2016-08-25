@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='alep_za_entities',
+    name='aleph_za_entities',
     entry_points={
         'aleph.analyzers': [
             'za_entities = aleph_za_entities.entities:Company'
