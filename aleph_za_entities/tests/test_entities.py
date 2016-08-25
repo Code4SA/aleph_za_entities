@@ -21,9 +21,16 @@ class EntitiesTestCase(TestCase):
                 ('1968/007463/07',
                  'Mawenzi Asset Managers (Pty) Ltd',
                  'Mawenzi Asset Managers (Pty) Ltd (Reg. No. 1968/007463/07)'),
+                ('1999/005161/07',
+                 'Gauteng Enclosure Manufacturers (Pty)',
+                 'Gauteng Enclosure Manufacturers (Pty) (Reg. No. 1999/005161/07)'),
+                ('1991/004341/07',
+                 'Venue Finders (Pty) Ltd',
+                 'Venue Finders (Pty) Ltd (Reg. No. 1991/004341/07)'),
                 ('1995/010219/07',
-                 'Distribution Services (Pty)',
-                 'Distribution Services (Pty) (Reg. No. 1995/010219/07)')
+                 'Phakamani Warehousing and Distribution Services (Pty)',
+                 'Phakamani Warehousing and Distribution Services (Pty) (Reg. No. 1995/010219/07)')
             ]
             for e in expected:
-                assert e in a.entities, e
+                assert e in a.entities, (e, a.entities)
+            assert len(a.entities) == len(expected), (len(a.entities), a.entities)
