@@ -18,13 +18,16 @@ class Company(Analyzer):
     scheme = 'sacipc'
     origin = 'za_company'
 
+    def __init__(self, *args, **kwargs):
+        super(Company, self).__init__(*args, **kwargs)
+        self.entities = []
+
     def prepare(self):
         self.collections = []
         for collection in self.document.collections:
             if collection.generate_entities:
                 self.collections.append(collection)
         self.disabled = not len(self.collections)
-        self.entities = []
 
     def on_text(self, text):
         if self.disabled or text is None:
@@ -37,7 +40,6 @@ class Company(Analyzer):
             regno = match[3]
             full = re.sub('\s+', ' ', match[0], flags=re.MULTILINE)
             name = re.sub('\s+', ' ', match[1], flags=re.MULTILINE)
-            log.info("%s  %s" % (regno, name, full))
             self.entities.append((regno, name, full))
 
     def load_entity(self, regno, name, full):
@@ -75,8 +77,8 @@ class Company(Analyzer):
             return
 
         self.document.delete_references(origin=self.origin)
-        for regno, full in self.entities:
-            entity_id = self.load_entity(regno, full)
+        for regno, name, full in self.entities:
+            entity_id = self.load_entity(regno, name, full)
             ref = Reference()
             ref.document_id = self.document.id
             ref.entity_id = entity_id
