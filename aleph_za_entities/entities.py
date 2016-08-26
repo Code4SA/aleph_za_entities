@@ -32,7 +32,8 @@ class Company(Analyzer):
     def on_text(self, text):
         if self.disabled or text is None:
             return
-        regexp = '(([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)]*|\s+and|\s+en)*)\s+' + \
+        regexp = '(([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)/]*|' + \
+                 '\s+and|\s+en|\s+\d+|\s+t/a)*)\s+' + \
                  '\(Reg\w*\.? +[Nn]\w+\.? +(\d{4}/\d+/\d{2})\))'
         flags = re.MULTILINE
         matches = re.findall(regexp, text, flags)
