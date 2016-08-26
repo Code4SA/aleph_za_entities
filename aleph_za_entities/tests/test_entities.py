@@ -35,9 +35,14 @@ def test_companies():
         ]
         for e in expected:
             yield check_company, a.entities, e
-        #assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+        assert len(a.entities) == len(expected), (len(a.entities), a.entities)
 
 def test_companies2():
+    """
+    - freestanding numbers
+    - t/a
+    - multiple spaces anywhere
+    """
     with open(os.path.join(FIXTURES, 'companies_02.txt')) as f:
         text = f.read()
         a = Company(None, None)
@@ -94,5 +99,5 @@ def test_companies2():
         ]
         for e in expected:
             yield check_company, a.entities, e
-            #assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+            assert len(a.entities) == len(expected), (len(a.entities), a.entities)
             
