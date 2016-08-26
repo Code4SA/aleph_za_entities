@@ -12,7 +12,9 @@ from aleph.analyze.analyzer import Analyzer
 log = logging.getLogger(__name__)
 
 DEFAULT_SCHEMA = '/entity/company.json#'
-
+REGEX = '(([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)/]*|' + \
+        '\s+and|\s+en|\s+\d+|\s+t/a)*)\s+' + \
+        '\(Reg\w*\.? +[Nn]\w+\.? +(\d{4}/\d+/\d{2})\))'
 
 class Company(Analyzer):
     scheme = 'sacipc'
@@ -21,6 +23,7 @@ class Company(Analyzer):
     def __init__(self, *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
         self.entities = []
+        self.re = re.compile(REGEX)
 
     def prepare(self):
         self.collections = []
@@ -32,11 +35,8 @@ class Company(Analyzer):
     def on_text(self, text):
         if self.disabled or text is None:
             return
-        regexp = '(([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)/]*|' + \
-                 '\s+and|\s+en|\s+\d+|\s+t/a)*)\s+' + \
-                 '\(Reg\w*\.? +[Nn]\w+\.? +(\d{4}/\d+/\d{2})\))'
         flags = re.MULTILINE
-        matches = re.findall(regexp, text, flags)
+        matches = self.re.findall(text, flags)
         for match in matches:
             regno = match[3]
             full = re.sub('\s+', ' ', match[0], flags=re.MULTILINE)
