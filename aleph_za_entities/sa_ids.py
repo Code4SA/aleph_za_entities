@@ -10,7 +10,7 @@ from aleph.analyze.analyzer import Analyzer
 
 log = logging.getLogger(__name__)
 
-DEFAULT_SCHEMA = '/entity/company.json#'
+DEFAULT_SCHEMA = '/entity/person.json#'
 # something like Forename Forename etc Lastname, SA_ID_NR & SA_ID_NR
 # Match another SA ID number separated by &, / or and so we can
 # skip partnerships to start with and not assign the wrong ID to the wrong
@@ -95,8 +95,8 @@ class Persons(Analyzer):
             ref.origin = self.origin
             ref.weight = 1
             db.session.add(ref)
-        log.info('za_companies extraced %s entities.', len(self.entities))
+        log.info('za_persons extraced %s entities.', len(self.entities))
 
 
 def is_valid_sa_id(id):
-    return luhn.verify(id)
+    return luhn.verify(id) and len(id) == 13

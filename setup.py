@@ -15,5 +15,8 @@ setup(
     author_email='info@code4sa.org',
     license='MIT',
     packages=["aleph_za_entities"],
-    zip_safe=False
+    zip_safe=False,
+    install_requires=[
+        'luhn'
+    ],
 )
