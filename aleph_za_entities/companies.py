@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import logging
-from collections import defaultdict
 import re
 
 from aleph.core import db
@@ -44,7 +43,7 @@ class Company(Analyzer):
             self.entities.append((regno, name, full))
 
     def load_entity(self, regno, name, full):
-        identifier = "%s:%s" % (self.scheme, regno)
+        identifier = regno
         q = db.session.query(EntityIdentifier)
         q = q.order_by(EntityIdentifier.deleted_at.desc().nullsfirst())
         q = q.filter(EntityIdentifier.scheme == self.scheme)
@@ -62,7 +61,7 @@ class Company(Analyzer):
             '$schema': DEFAULT_SCHEMA,
             'identifiers': [{
                 'scheme': self.scheme,
-                'identifier': regno
+                'identifier': identifier
             }],
             'other_names': [
                 {'name': name},

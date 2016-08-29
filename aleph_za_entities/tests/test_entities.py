@@ -1,12 +1,8 @@
-from aleph_za_entities.entities import Company
-from unittest import TestCase
+from aleph_za_entities.companies import Company
+from aleph_za_entities.sa_ids import Persons
 import os
 
 FIXTURES = os.path.join(os.path.dirname(__file__), 'fixtures')
-
-
-def check_company(entities, entity_tuple):
-    assert entity_tuple in entities
 
 
 def test_on_text_empty():
@@ -15,7 +11,7 @@ def test_on_text_empty():
     assert a.entities == [], a.entities
 
 def test_companies():
-    with open(os.path.join(FIXTURES, 'companies_01.txt')) as f:
+    with open(os.path.join(FIXTURES, 'entities_01.txt')) as f:
         text = f.read()
         a = Company(None, None)
         a.on_text(text)
@@ -34,7 +30,7 @@ def test_companies():
              'Phakamani Warehousing and Distribution Services (Pty) (Reg. No. 1995/010219/07)')
         ]
         for e in expected:
-            yield check_company, a.entities, e
+            yield check_entity_tuple, a.entities, e
         assert len(a.entities) == len(expected), (len(a.entities), a.entities)
 
 def test_companies2():
@@ -43,7 +39,7 @@ def test_companies2():
     - t/a
     - multiple spaces anywhere
     """
-    with open(os.path.join(FIXTURES, 'companies_02.txt')) as f:
+    with open(os.path.join(FIXTURES, 'entities_02.txt')) as f:
         text = f.read()
         a = Company(None, None)
         a.on_text(text)
@@ -98,6 +94,75 @@ def test_companies2():
              'Mackay Bridge Farm CC (Reg. No. 1990/034742/23)')
         ]
         for e in expected:
-            yield check_company, a.entities, e
+            yield check_entity_tuple, a.entities, e
             assert len(a.entities) == len(expected), (len(a.entities), a.entities)
-            
+
+
+def test_sa_nids():
+    with open(os.path.join(FIXTURES, 'entities_01.txt')) as f:
+        text = f.read()
+        a = Persons(None, None)
+        a.on_text(text)
+        expected = [
+            ('7910300007088',
+             'Chantel Els',
+             'Chantel Els, 7910300007088'),
+            ('7705125087087',
+             'Willem Jacobus van der Merwe',
+             'Willem Jacobus van der Merwe, 7705125087087'),
+            ('6311305047081',
+             'Graham Ronald Charles',
+             'Graham Ronald Charles, 6311305047081'),
+            ('7511250160081',
+             'Michelle Monique Gardiner',
+             'Michelle Monique Gardiner, 7511250160081'),
+            ('4910215609088',
+             'Molwele Molahlegi Simon',
+             'Molwele Molahlegi Simon, 4910215609088'),
+            ('8112300139081',
+             'Alicia Ann van Putten',
+             'Alicia Ann van Putten, 8112300139081'),
+            ('8407205089088',
+             'Bell Reinhardt',
+             'Bell Reinhardt, 8407205089088'),
+            ('7404095080088',
+             'Graham Paul Schultz',
+             'Graham Paul Schultz, 7404095080088'),
+            ('8308250675088',
+             'Nonhlanhla Mbalenhle Mthethwa',
+             'Nonhlanhla Mbalenhle Mthethwa, 8308250675088'),
+            ('8107170183086',
+             'Susara Johanna Magrieta Booysen',
+             'Susara Johanna Magrieta Booysen, 8107170183086'),
+            ('8108185049080',
+             'Marcus Cilliers',
+             'Marcus Cilliers, 8108185049080'),
+            ('8208190669086',
+             'Gloria Modiegi Pelle',
+             'Gloria Modiegi Pelle, 8208190669086'),
+            ('8403185602081',
+             'Mashudu Wayne Mandiwana',
+             'Mashudu Wayne Mandiwana, 8403185602081'),
+            ('6403065107088',
+             'Nicolaas Jacob Badenhorst',
+             'Nicolaas Jacob Badenhorst, 6403065107088'),
+            ('8409020290081',
+             'Shernel Mouton',
+             'Shernel Mouton, 8409020290081'),
+            ('7312165089089',
+             'Lion Schalk Postma',
+             'Lion Schalk Postma, 7312165089089'),
+            ('7707250018085',
+             'Tryna van Wyngaardt-Schoeman',
+             'Tryna van Wyngaardt-Schoeman, 7707250018085'),
+            ('6201080130089',
+             'Annelie Carlo Viviers',
+             'Annelie Carlo Viviers, 6201080130089'),
+        ]
+        for e in expected:
+            yield check_entity_tuple, a.entities, e
+        assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+
+
+def check_entity_tuple(entities, entity_tuple):
+    assert entity_tuple in entities
