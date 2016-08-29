@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import logging
 import re
+import luhn
 
 from aleph.core import db
 from aleph.model import Reference, Entity
@@ -44,6 +45,9 @@ class Persons(Analyzer):
                 # Skip partnerships
                 continue
             sa_id = match[3]
+            if not is_valid_sa_id(sa_id):
+                log.debug("Skipping invalid SA ID %s" % sa_id)
+                continue
             full = re.sub('\s+', ' ', match[0], flags=re.MULTILINE)
             name = re.sub('\s+', ' ', match[1], flags=re.MULTILINE)
             self.entities.append((sa_id, name, full))
@@ -92,3 +96,7 @@ class Persons(Analyzer):
             ref.weight = 1
             db.session.add(ref)
         log.info('za_companies extraced %s entities.', len(self.entities))
+
+
+def is_valid_sa_id(id):
+    return luhn.verify(id)
