@@ -15,7 +15,8 @@ DEFAULT_SCHEMA = '/entity/person.json#'
 # Match another SA ID number separated by &, / or and so we can
 # skip partnerships to start with and not assign the wrong ID to the wrong
 # person
-REGEX = '(([A-Z][-\w\']*(\s+[A-Z][\w\'-]+|\s+v[ao]n|\s+de[nr]?)*),' + \
+REGEX = '((([A-Z][-\w\']*|v[ao]n|de[nr]?|du)' + \
+        '(,?\s+[A-Z][\w\'-]+|\s+v[ao]n|\s+de[nr]?|\s+du)*),' + \
         '\s+(\d{13})(\s*[/&]?(and)?\s*\d{10,15})?)'
 
 
@@ -41,10 +42,10 @@ class Persons(Analyzer):
         flags = re.MULTILINE
         matches = self.re.findall(text, flags)
         for match in matches:
-            if match[4]:
+            if match[5]:
                 # Skip partnerships
                 continue
-            sa_id = match[3]
+            sa_id = match[4]
             if not is_valid_sa_id(sa_id):
                 log.debug("Skipping invalid SA ID %s" % sa_id)
                 continue
