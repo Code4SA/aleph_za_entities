@@ -20,7 +20,7 @@ REGEX = '(([A-Z][-\w\']*(\s+[A-Z][\w\'-]+|\s+v[ao]n|\s+de[nr]?)*),' + \
 
 
 class Persons(Analyzer):
-    scheme = 'sacipc'
+    scheme = 'sa'
     origin = 'za_persons'
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +53,7 @@ class Persons(Analyzer):
             self.entities.append((sa_id, name, full))
 
     def load_entity(self, sa_id, name, full):
-        identifier = "%s:%s" % (self.scheme, sa_id)
+        identifier = sa_id
         q = db.session.query(EntityIdentifier)
         q = q.order_by(EntityIdentifier.deleted_at.desc().nullsfirst())
         q = q.filter(EntityIdentifier.scheme == self.scheme)
@@ -71,7 +71,7 @@ class Persons(Analyzer):
             '$schema': DEFAULT_SCHEMA,
             'identifiers': [{
                 'scheme': self.scheme,
-                'identifier': sa_id
+                'identifier': identifier
             }],
             'other_names': [
                 {'name': name},
