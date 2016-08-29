@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import logging
-from collections import defaultdict
 import re
 
 from aleph.core import db

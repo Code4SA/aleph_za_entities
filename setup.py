@@ -4,7 +4,8 @@ setup(
     name='aleph_za_entities',
     entry_points={
         'aleph.analyzers': [
-            'za_entities = aleph_za_entities.entities:Company'
+            'za_companies = aleph_za_entities.companies:Company',
+            'za_persons = aleph_za_entities.sa_ids:Persons',
         ]
     },
     version='0.1',
