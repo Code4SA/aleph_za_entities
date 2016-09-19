@@ -16,7 +16,7 @@ DEFAULT_SCHEMA = '/entity/person.json#'
 # skip partnerships to start with and not assign the wrong ID to the wrong
 # person
 REGEX = '((([A-Z][-\w\']*|v[ao]n|de[nr]?|du)' + \
-        '(,?\s+[A-Z][\w\'-]+|\s+v[ao]n|\s+de[nr]?|\s+du)*),' + \
+        '(,?\s+[A-Z][\w\'-]+|\s+v[ao]n|\s+de[nr]?|\s+du)+),' + \
         '\s+(\d{13})(\s*[/&]?(and)?\s*\d{10,15})?)'
 
 
