@@ -21,7 +21,7 @@ REGEX = """
 \s+en|                         # - "and" in afrikaans - TODO add more languages
 \s+\d+|                        # - some integer
 \s+t/a                         # - abbvreviated "trading as"
-)*                             # Finish subsequent name count control
+)+                             # Finish subsequent name count control
 )\s+                           # Finish name capture
 \(                             # Start matching Reg no in parens
 Reg\w*\.?\s+[Nn]\w+\.?\s+        # Various ways of writing "Registration number"

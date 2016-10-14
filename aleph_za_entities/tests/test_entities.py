@@ -32,7 +32,7 @@ def test_companies():
         ]
         for e in expected:
             yield check_entity_tuple, a.entities, e
-        assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+        assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
 
 
 def test_companies2():
@@ -97,7 +97,7 @@ def test_companies2():
         ]
         for e in expected:
             yield check_entity_tuple, a.entities, e
-            assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+            assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
 
 
 def test_companies3():
@@ -169,7 +169,7 @@ def test_companies3():
         ]
     for e in expected:
         yield check_entity_tuple, a.entities, e
-        assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+        assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
 
 
 def test_sa_nids():
@@ -235,7 +235,7 @@ def test_sa_nids():
         ]
         for e in expected:
             yield check_entity_tuple, a.entities, e
-        assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+        assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
 
 
 def test_sa_nids2():
@@ -349,7 +349,7 @@ def test_sa_nids2():
         ]
         for e in expected:
             yield check_entity_tuple, a.entities, e
-        assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+        assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
 
 
 def check_entity_tuple(entities, entity_tuple):
