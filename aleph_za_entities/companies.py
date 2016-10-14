@@ -19,7 +19,7 @@ REGEX = """
 [A-Z][\w]*\.?                  # First name word must start with caps but can be abbreviated with .
 (                              # Start multiple subsequent word parens to control number
                                # Subsequent name words must be one of
-\s[a-zA-Zé\-@\.#&!\(\)/’]*|     # - letters possibly connected to some punctuation
+\s[a-zA-Zé\-@\.#&!\(\)/’]*|    # - letters possibly connected to some punctuation
 \s\d+                          # - integers
 \sand|                         # - "and"
 \sen|                          # - "and" in afrikaans - TODO add more languages
@@ -33,6 +33,15 @@ Reg\w*\.?\s[Nn]\w+\.?\s        # Various ways of writing "Registration number"
 \)                             # Finish Reg no in parens
 )                              # Finish full name and ID capture
 """
+
+# Names to skip because they're incorrect and need "very domain/doc-specific"
+# regexing or coding to support properly for some currently subjective
+# definition of that.
+# Rather than go down the road of coding domain/doc-specific entity extraction
+# here, let's leave that for scrapers of those domains/documents.
+NAME_BLACKLIST = [
+    'Applicant'
+]
 
 
 class Company(Analyzer):
@@ -61,6 +70,8 @@ class Company(Analyzer):
             regno = match[3]
             full = match[0]
             name = match[1]
+            if name in NAME_BLACKLIST:
+                continue
             self.entities.append((regno, name, full))
 
     def load_entity(self, regno, name, full):

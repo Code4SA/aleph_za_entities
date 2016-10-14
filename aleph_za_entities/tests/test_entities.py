@@ -105,6 +105,13 @@ def test_companies2():
 def test_companies3():
     """
     - names that were incorrectly extracted as single-word names
+    - ignore things with domain-specific labels between name and reg nr
+    - ignore reg nr not in parens otherwise we might open a can of worms
+    - ignore reg nr in parens without "Reg No" in some form prefixing it inside
+      parens for same reason
+    - ignore single-word names which has nice effect of ignoring addresses in the
+      usual position of the name where the postal region is one word
+      (in this case "LYTTELTON MANOR, PRETORIA (Registrasie No. 2006/017140/07)")
     """
     with open(os.path.join(FIXTURES, 'entities_04_companies_not_single_word.txt')) as f:
         text = f.read()
@@ -148,21 +155,15 @@ def test_companies3():
              'Riebeeck Vallei Drankwinkel CC',
              'Riebeeck Vallei Drankwinkel CC (Reg. No. 2010/115894/23)'),
             ('2008/038059/23',
-             'Professional Mechanical Services CC',
-             'Professional Mechanical Services CC (Reg. No. 2008/038059/23)'),
-            ('1981/010704/07',
-             'Applicant',
-             'Applicant (Registration Number 1981/010704/07)'),
-            ('1992/001546/07',
-             'Applicant',
-             'Applicant (Registration Number 1992/001546/07)'),
-            ('1973/013847/07',
-             'Applicant',
-             'Applicant (Registration Number 1973/013847/07)'),
+             'Professional Mechanical services CC',
+             'Professional Mechanical services CC (Reg. No. 2008/038059/23)'),
+            ('2008/038059/23',
+             'Professional Mechanical services CC',
+             'Professional Mechanical services CC (Reg. No. 2008/038059/23)'),
         ]
     for e in expected:
         yield check_entity_tuple, a.entities, e
-    assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
+    yield check_expected_actual_length, expected, a.entities
 
 
 def test_sa_nids():
@@ -346,4 +347,8 @@ def test_sa_nids2():
 
 
 def check_entity_tuple(entities, entity_tuple):
-    assert entity_tuple in entities, (entity_tuple, entities)
+    assert entity_tuple in entities, "\n\nExpected: %r\n\nIn actuals: %r" % (entity_tuple, entities)
+
+
+def check_expected_actual_length(expected, actual):
+    assert len(actual) == len(expected), "\n\nExpected %d != Actual %d\n\nActual: %r" % (len(expected), len(actual), actual)
