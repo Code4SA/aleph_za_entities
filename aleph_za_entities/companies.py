@@ -11,9 +11,24 @@ from aleph.analyze.analyzer import Analyzer
 log = logging.getLogger(__name__)
 
 DEFAULT_SCHEMA = '/entity/company.json#'
-REGEX = '(([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)/]*|' + \
-        '\s+and|\s+en|\s+\d+|\s+t/a)*)\s+' + \
-        '\(Reg\w*\.? +[Nn]\w+\.? +(\d{4}/\d+/\d{2})\))'
+REGEX = """
+(                              # Start full name and ID capture
+(                              # Start name capture
+[A-Z][\w]*\.?                  # First name word must start with caps but can be abbreviated with .
+(                              # Start multiple subsequent word parens to control number
+\s+[A-Z\(][\w\-@\.#&!\(\)/]*|  # Subsequent name words must start with caps or be one of
+\s+and|                        # - "and"
+\s+en|                         # - "and" in afrikaans - TODO add more languages
+\s+\d+|                        # - some integer
+\s+t/a                         # - abbvreviated "trading as"
+)*                             # Finish subsequent name count control
+)\s+                           # Finish name capture
+\(                             # Start matching Reg no in parens
+Reg\w*\.?\s+[Nn]\w+\.?\s+        # Various ways of writing "Registration number"
+(\d{4}/\d+/\d{2})              # Capture post-1951 style company reg numbers
+\)                             # Finish Reg no in parens
+)                              # Finish full name and ID capture
+"""
 
 class Company(Analyzer):
     scheme = 'sacipc'
@@ -22,7 +37,7 @@ class Company(Analyzer):
     def __init__(self, *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
         self.entities = []
-        self.re = re.compile(REGEX)
+        self.re = re.compile(REGEX, re.VERBOSE)
 
     def prepare(self):
         self.collections = []

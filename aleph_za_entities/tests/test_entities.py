@@ -10,6 +10,7 @@ def test_on_text_empty():
     a.on_text('')
     assert a.entities == [], a.entities
 
+
 def test_companies():
     with open(os.path.join(FIXTURES, 'entities_01.txt')) as f:
         text = f.read()
@@ -32,6 +33,7 @@ def test_companies():
         for e in expected:
             yield check_entity_tuple, a.entities, e
         assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+
 
 def test_companies2():
     """
@@ -96,6 +98,78 @@ def test_companies2():
         for e in expected:
             yield check_entity_tuple, a.entities, e
             assert len(a.entities) == len(expected), (len(a.entities), a.entities)
+
+
+def test_companies3():
+    """
+    - names that were incorrectly extracted as single-word names
+    """
+    with open(os.path.join(FIXTURES, 'entities_04_companies_not_single_word.txt')) as f:
+        text = f.read()
+        a = Company(None, None)
+        a.on_text(text)
+        expected = [
+            ('2006/041818/23',
+             'Homefront  Trading  26CC',
+             'Homefront  Trading  26CC  (Reg.  No.  2006/041818/23)'),
+            ('2005/159546/23',
+             'Uptown  trading  680  CC',
+             'Uptown  trading  680  CC (Reg. No. 2005/159546/23)'),
+            ('2009/023427/23',
+             'CC',
+             'CC (Reg. No. 2009/023427/23)'),
+            ('2009/023427/23',
+             'BK',
+             'BK (Reg. No. 2009/023427/23)'),
+            ('2006/134568/23',
+             'Teak From Africa CC',
+             'Teak From Africa CC (Reg No. 2006/134568/23)'),
+            ('2006/134568/23',
+             'Teak From Africa CC',
+             'Teak From Africa CC (Reg. No. 2006/134568/23)'),
+            ('2006/134568/23',
+             'TEAK FROM AFRICA CC',
+             'TEAK FROM AFRICA CC (Reg. No. 2006/134568/23)'),
+            ('2006/134568/23',
+             'Africa',
+             'Africa (Reg. No. 2006/134568/23)'),
+            ('2006/134568/23',
+             'Teak From Africa',
+             'Teak From Africa (Reg. No. 2006/134568/23)'),
+            ('2008/018264/07',
+             'CC',
+             'CC (Reg No. 2008/018264/07)'),
+            ('2006/017140/07',
+             'Revolution Business Solutions (Edms) Bpk',
+             'Revolution Business Solutions (Edms) Bpk (Reg. No. 2006/017140/07)'),
+            ('2006/017140/07',
+             'PRETORIA',
+             'PRETORIA (Registrasie No. 2006/017140/07)'),
+            ('2006/017140/07',
+             'PRETORIA',
+             'PRETORIA (Registrasie No. 2006/017140/07)'),
+            ('2010/135710/23',
+             'CC',
+             'CC (Reg. No. 2010/135710/23)'),
+            ('2010/115894/23',
+             'Riebeeck Vallei Drankwinkel CC',
+             'Riebeeck Vallei Drankwinkel CC (Reg. No. 2010/115894/23)'),
+            ('2008/038059/23',
+             'CC',
+             'CC (Reg. No. 2008/038059/23)'),
+            ('1981/010704/07',
+             'Applicant',
+             'Applicant (Registration Number 1981/010704/07)'),
+            ('1992/001546/07',
+             'Applicant',
+             'Applicant (Registration Number 1992/001546/07)'),
+            ('1973/013847/07',
+             'Applicant',
+             'Applicant (Registration Number 1973/013847/07)'),
+        ]
+    for e in expected:
+        yield check_entity_tuple, a.entities, e
+        assert len(a.entities) == len(expected), (len(a.entities), a.entities)
 
 
 def test_sa_nids():
@@ -279,4 +353,4 @@ def test_sa_nids2():
 
 
 def check_entity_tuple(entities, entity_tuple):
-    assert entity_tuple in entities
+    assert entity_tuple in entities, entity_tuple
