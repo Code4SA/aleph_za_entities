@@ -346,6 +346,40 @@ def test_sa_nids2():
     yield check_expected_actual_length, expected, a.entities
 
 
+def test_sa_nids3():
+    """
+    names that were incorrectly extracted as single words
+    - skip when ID in parens instead of following a comma for now (See Juan Pace
+    """
+    expected = [
+        ('3112030024087',
+         'Hamman, Johanna Cornelia',
+         'Hamman, Johanna Cornelia, 3112030024087'),
+        ('7801050277080',
+         'SHEILA MUHAMED JOSE',
+         'SHEILA MUHAMED JOSE, 7801050277080'),
+        ('6607225112081',
+         'Williams, Wyne Coad',
+         'Williams, Wyne Coad, 6607225112081'),
+        ('6702240131081',
+         'Francina Hendrina Magdalena le Roux',
+         'Francina Hendrina Magdalena le Roux, 6702240131081'),
+        ('4012040037088',
+         'Le Roux, Frida Sofie',
+         'Le Roux, Frida Sofie, 4012040037088'),
+        ('3403225033086',
+         'Christiaan Benjamin le Roux',
+         'Christiaan Benjamin le Roux, 3403225033086'),
+    ]
+    with open(os.path.join(FIXTURES, 'entities_05_names_not_single_word.txt')) as f:
+        text = f.read()
+        a = Persons(None, None)
+        a.on_text(text)
+    for e in expected:
+        yield check_entity_tuple, a.entities, e
+    yield check_expected_actual_length, expected, a.entities
+
+
 def check_entity_tuple(entities, entity_tuple):
     assert entity_tuple in entities, "\n\nExpected: %r\n\nIn actuals: %r" % (entity_tuple, entities)
 

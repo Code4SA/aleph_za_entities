@@ -23,12 +23,12 @@ REGEX = """
 v[ao]n|de[nr]?|du|le             # or is one of the common surname prefixes
 )                                # End first word capture
 (,?                              # Start subsequent word count control
-\s+[A-Z][\w\'-]+|                # Subsequent words start with caps
-\s+v[ao]n|\s+de[nr]?|\s+du|\sle  # or is one of the common surname prefixes
+\s[A-Z][\w\'-]+|                 # Subsequent words start with caps
+\sv[ao]n|\sde[nr]?|\sdu|\sle     # or is one of the common surname prefixes
 )+                               # End subsequent word count control
 ),                               # End full name capture, require comma
-\s+(\d{13})                      # Capture 13 digits for SA ID number
-(\s*[/&]?(and)?\s*\d{10,15})?    # Optionally capture a second ID separated by and or &
+\s(\d{13})                       # Capture 13 digits for SA ID number
+(\s?[/&]?(and)?\s?\d{10,15})?    # Optionally capture a second ID separated by and or &
 )                                # End full capture
 """
 
@@ -50,10 +50,11 @@ class Persons(Analyzer):
         self.disabled = not len(self.collections)
 
     def on_text(self, text):
-        if self.disabled or text is None:
+        cleantext = re.sub('\s+', ' ', text, flags=re.MULTILINE)
+        if self.disabled or cleantext is None:
             return
         flags = re.MULTILINE
-        matches = self.re.findall(text, flags)
+        matches = self.re.findall(cleantext, flags)
         for match in matches:
             if match[5]:
                 # Skip partnerships
@@ -62,8 +63,8 @@ class Persons(Analyzer):
             if not is_valid_sa_id(sa_id):
                 log.debug("Skipping invalid SA ID %s" % sa_id)
                 continue
-            full = re.sub('\s+', ' ', match[0], flags=re.MULTILINE)
-            name = re.sub('\s+', ' ', match[1], flags=re.MULTILINE)
+            full = match[0]
+            name = match[1]
             self.entities.append((sa_id, name, full))
 
     def load_entity(self, sa_id, name, full):
