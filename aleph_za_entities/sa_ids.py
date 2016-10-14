@@ -15,9 +15,22 @@ DEFAULT_SCHEMA = '/entity/person.json#'
 # Match another SA ID number separated by &, / or and so we can
 # skip partnerships to start with and not assign the wrong ID to the wrong
 # person
-REGEX = '((([A-Z][-\w\']*|v[ao]n|de[nr]?|du)' + \
-        '(,?\s+[A-Z][\w\'-]+|\s+v[ao]n|\s+de[nr]?|\s+du)+),' + \
-        '\s+(\d{13})(\s*[/&]?(and)?\s*\d{10,15})?)'
+REGEX = """
+(                                # Start full capture
+(                                # Start full name capture
+(                                # Start first word capture
+[A-Z][-\w\']*|                   # First word starts with caps
+v[ao]n|de[nr]?|du|le             # or is one of the common surname prefixes
+)                                # End first word capture
+(,?                              # Start subsequent word count control
+\s+[A-Z][\w\'-]+|                # Subsequent words start with caps
+\s+v[ao]n|\s+de[nr]?|\s+du|\sle  # or is one of the common surname prefixes
+)+                               # End subsequent word count control
+),                               # End full name capture, require comma
+\s+(\d{13})                      # Capture 13 digits for SA ID number
+(\s*[/&]?(and)?\s*\d{10,15})?    # Optionally capture a second ID separated by and or &
+)                                # End full capture
+"""
 
 
 class Persons(Analyzer):
@@ -27,7 +40,7 @@ class Persons(Analyzer):
     def __init__(self, *args, **kwargs):
         super(Persons, self).__init__(*args, **kwargs)
         self.entities = []
-        self.re = re.compile(REGEX)
+        self.re = re.compile(REGEX, re.VERBOSE)
 
     def prepare(self):
         self.collections = []
