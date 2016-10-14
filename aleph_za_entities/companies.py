@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 import logging
 import re
@@ -16,19 +18,22 @@ REGEX = """
 (                              # Start name capture
 [A-Z][\w]*\.?                  # First name word must start with caps but can be abbreviated with .
 (                              # Start multiple subsequent word parens to control number
-\s+[A-Z\(][\w\-@\.#&!\(\)/]*|  # Subsequent name words must start with caps or be one of
-\s+and|                        # - "and"
-\s+en|                         # - "and" in afrikaans - TODO add more languages
-\s+\d+|                        # - some integer
-\s+t/a                         # - abbvreviated "trading as"
+                               # Subsequent name words must be one of
+\s[a-zA-Zé\-@\.#&!\(\)/’]*|     # - letters possibly connected to some punctuation
+\s\d+                          # - integers
+\sand|                         # - "and"
+\sen|                          # - "and" in afrikaans - TODO add more languages
+\s\d+\w*|                      # - some integer optionally followed by alphanum
+\st/a                          # - abbvreviated "trading as"
 )+                             # Finish subsequent name count control
-)\s+                           # Finish name capture
+)\s                            # Finish name capture
 \(                             # Start matching Reg no in parens
-Reg\w*\.?\s+[Nn]\w+\.?\s+        # Various ways of writing "Registration number"
+Reg\w*\.?\s[Nn]\w+\.?\s        # Various ways of writing "Registration number"
 (\d{4}/\d+/\d{2})              # Capture post-1951 style company reg numbers
 \)                             # Finish Reg no in parens
 )                              # Finish full name and ID capture
 """
+
 
 class Company(Analyzer):
     scheme = 'sacipc'
@@ -50,11 +55,12 @@ class Company(Analyzer):
         if self.disabled or text is None:
             return
         flags = re.MULTILINE
-        matches = self.re.findall(text, flags)
+        cleantext = re.sub('\s+', ' ', text, flags=re.MULTILINE)
+        matches = self.re.findall(cleantext, flags)
         for match in matches:
             regno = match[3]
-            full = re.sub('\s+', ' ', match[0], flags=re.MULTILINE)
-            name = re.sub('\s+', ' ', match[1], flags=re.MULTILINE)
+            full = match[0]
+            name = match[1]
             self.entities.append((regno, name, full))
 
     def load_entity(self, regno, name, full):

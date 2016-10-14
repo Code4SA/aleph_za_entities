@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from aleph_za_entities.companies import Company
 from aleph_za_entities.sa_ids import Persons
 import os
@@ -110,17 +112,17 @@ def test_companies3():
         a.on_text(text)
         expected = [
             ('2006/041818/23',
-             'Homefront  Trading  26CC',
-             'Homefront  Trading  26CC  (Reg.  No.  2006/041818/23)'),
+             'Homefront Trading 26CC',
+             'Homefront Trading 26CC (Reg. No. 2006/041818/23)'),
             ('2005/159546/23',
-             'Uptown  trading  680  CC',
-             'Uptown  trading  680  CC (Reg. No. 2005/159546/23)'),
+             'Uptown trading 680 CC',
+             'Uptown trading 680 CC (Reg. No. 2005/159546/23)'),
             ('2009/023427/23',
-             'CC',
-             'CC (Reg. No. 2009/023427/23)'),
+             'Olifants River Safari’s CC',
+             'Olifants River Safari’s CC (Reg. No. 2009/023427/23)'),
             ('2009/023427/23',
-             'BK',
-             'BK (Reg. No. 2009/023427/23)'),
+             'Olifants River Safari’s BK',
+             'Olifants River Safari’s BK (Reg. No. 2009/023427/23)'),
             ('2006/134568/23',
              'Teak From Africa CC',
              'Teak From Africa CC (Reg No. 2006/134568/23)'),
@@ -131,14 +133,11 @@ def test_companies3():
              'TEAK FROM AFRICA CC',
              'TEAK FROM AFRICA CC (Reg. No. 2006/134568/23)'),
             ('2006/134568/23',
-             'Africa',
-             'Africa (Reg. No. 2006/134568/23)'),
-            ('2006/134568/23',
              'Teak From Africa',
              'Teak From Africa (Reg. No. 2006/134568/23)'),
             ('2008/018264/07',
-             'CC',
-             'CC (Reg No. 2008/018264/07)'),
+             'R Estate Café CC',
+             'R Estate Café CC (Reg No. 2008/018264/07)'),
             ('2006/017140/07',
              'Revolution Business Solutions (Edms) Bpk',
              'Revolution Business Solutions (Edms) Bpk (Reg. No. 2006/017140/07)'),
@@ -169,7 +168,7 @@ def test_companies3():
         ]
     for e in expected:
         yield check_entity_tuple, a.entities, e
-        assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
+    assert len(a.entities) == len(expected), (len(expected), len(a.entities), a.entities)
 
 
 def test_sa_nids():
@@ -353,4 +352,4 @@ def test_sa_nids2():
 
 
 def check_entity_tuple(entities, entity_tuple):
-    assert entity_tuple in entities, entity_tuple
+    assert entity_tuple in entities, (entity_tuple, entities)
