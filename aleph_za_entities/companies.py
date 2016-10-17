@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 import logging
 import re
@@ -11,9 +13,36 @@ from aleph.analyze.analyzer import Analyzer
 log = logging.getLogger(__name__)
 
 DEFAULT_SCHEMA = '/entity/company.json#'
-REGEX = '(([A-Z][\w]*\.?(\s+[A-Z\(][\w\-@\.#&!\(\)/]*|' + \
-        '\s+and|\s+en|\s+\d+|\s+t/a)*)\s+' + \
-        '\(Reg\w*\.? +[Nn]\w+\.? +(\d{4}/\d+/\d{2})\))'
+REGEX = """
+(                              # Start full name and ID capture
+(                              # Start name capture
+[A-Z][\w]*\.?                  # First name word must start with caps but can be abbreviated with .
+(                              # Start multiple subsequent word parens to control number
+                               # Subsequent name words must be one of
+\s[a-zA-Zé\-@\.#&!\(\)/’]*|    # - letters possibly connected to some punctuation
+\s\d+                          # - integers
+\sand|                         # - "and"
+\sen|                          # - "and" in afrikaans - TODO add more languages
+\s\d+\w*|                      # - some integer optionally followed by alphanum
+\st/a                          # - abbvreviated "trading as"
+)+                             # Finish subsequent name count control
+)\s                            # Finish name capture
+\(                             # Start matching Reg no in parens
+Reg\w*\.?\s[Nn]\w+\.?\s        # Various ways of writing "Registration number"
+(\d{4}/\d+/\d{2})              # Capture post-1951 style company reg numbers
+\)                             # Finish Reg no in parens
+)                              # Finish full name and ID capture
+"""
+
+# Names to skip because they're incorrect and need "very domain/doc-specific"
+# regexing or coding to support properly for some currently subjective
+# definition of that.
+# Rather than go down the road of coding domain/doc-specific entity extraction
+# here, let's leave that for scrapers of those domains/documents.
+NAME_BLACKLIST = [
+    'Applicant'
+]
+
 
 class Company(Analyzer):
     scheme = 'sacipc'
@@ -22,7 +51,7 @@ class Company(Analyzer):
     def __init__(self, *args, **kwargs):
         super(Company, self).__init__(*args, **kwargs)
         self.entities = []
-        self.re = re.compile(REGEX)
+        self.re = re.compile(REGEX, re.VERBOSE)
 
     def prepare(self):
         self.collections = []
@@ -35,11 +64,14 @@ class Company(Analyzer):
         if self.disabled or text is None:
             return
         flags = re.MULTILINE
-        matches = self.re.findall(text, flags)
+        cleantext = re.sub('\s+', ' ', text, flags=re.MULTILINE)
+        matches = self.re.findall(cleantext, flags)
         for match in matches:
             regno = match[3]
-            full = re.sub('\s+', ' ', match[0], flags=re.MULTILINE)
-            name = re.sub('\s+', ' ', match[1], flags=re.MULTILINE)
+            full = match[0]
+            name = match[1]
+            if name in NAME_BLACKLIST:
+                continue
             self.entities.append((regno, name, full))
 
     def load_entity(self, regno, name, full):
