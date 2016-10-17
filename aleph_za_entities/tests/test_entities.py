@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from aleph_za_entities.companies import Company
+from aleph_za_entities.companies import CompanyExtractor
 from aleph_za_entities.sa_ids import Persons
 import os
 
@@ -8,9 +8,9 @@ FIXTURES = os.path.join(os.path.dirname(__file__), 'fixtures')
 
 
 def test_on_text_empty():
-    a = Company(None, None)
-    a.on_text('')
-    assert a.entities == [], a.entities
+    ex = CompanyExtractor()
+    entities = ex.on_text('')
+    assert entities == [], entities
 
 
 def test_companies():
@@ -30,11 +30,11 @@ def test_companies():
     ]
     with open(os.path.join(FIXTURES, 'entities_01.txt')) as f:
         text = f.read()
-        a = Company(None, None)
-        a.on_text(text)
+        ex = CompanyExtractor()
+        entities = ex.on_text(text)
     for e in expected:
-        yield check_entity_tuple, a.entities, e
-    yield check_expected_actual_length, expected, a.entities
+        yield check_company_tuple, entities, e
+    yield check_expected_actual_length, expected, entities
 
 
 def test_companies2():
@@ -95,11 +95,11 @@ def test_companies2():
     ]
     with open(os.path.join(FIXTURES, 'entities_02.txt')) as f:
         text = f.read()
-        a = Company(None, None)
-        a.on_text(text)
+        ex = CompanyExtractor()
+        entities = ex.on_text(text)
     for e in expected:
-        yield check_entity_tuple, a.entities, e
-    yield check_expected_actual_length, expected, a.entities
+        yield check_company_tuple, entities, e
+    yield check_expected_actual_length, expected, entities
 
 
 def test_companies3():
@@ -138,6 +138,9 @@ def test_companies3():
         ('2006/134568/23',
          'Teak From Africa',
          'Teak From Africa (Reg. No. 2006/134568/23)'),
+        ('2006/134568/23',
+         'Teak From Africa',
+         'Teak From Africa (Reg. No. 2006/134568/23)'),
         ('2008/018264/07',
          'R Estate Café CC',
          'R Estate Café CC (Reg No. 2008/018264/07)'),
@@ -153,17 +156,14 @@ def test_companies3():
         ('2008/038059/23',
          'Professional Mechanical services CC',
          'Professional Mechanical services CC (Reg. No. 2008/038059/23)'),
-        ('2008/038059/23',
-         'Professional Mechanical services CC',
-         'Professional Mechanical services CC (Reg. No. 2008/038059/23)'),
     ]
     with open(os.path.join(FIXTURES, 'entities_04_companies_not_single_word.txt')) as f:
         text = f.read()
-        a = Company(None, None)
-        a.on_text(text)
+        ex = CompanyExtractor()
+        entities = ex.on_text(text)
     for e in expected:
-        yield check_entity_tuple, a.entities, e
-    yield check_expected_actual_length, expected, a.entities
+        yield check_company_tuple, entities, e
+    yield check_expected_actual_length, expected, entities
 
 
 def test_sa_nids():
@@ -228,7 +228,7 @@ def test_sa_nids():
         a = Persons(None, None)
         a.on_text(text)
     for e in expected:
-        yield check_entity_tuple, a.entities, e
+        yield check_said_tuple, a.entities, e
     yield check_expected_actual_length, expected, a.entities
 
 
@@ -342,7 +342,7 @@ def test_sa_nids2():
         a = Persons(None, None)
         a.on_text(text)
     for e in expected:
-        yield check_entity_tuple, a.entities, e
+        yield check_said_tuple, a.entities, e
     yield check_expected_actual_length, expected, a.entities
 
 
@@ -376,12 +376,17 @@ def test_sa_nids3():
         a = Persons(None, None)
         a.on_text(text)
     for e in expected:
-        yield check_entity_tuple, a.entities, e
+        yield check_said_tuple, a.entities, e
     yield check_expected_actual_length, expected, a.entities
 
 
-def check_entity_tuple(entities, entity_tuple):
+def check_said_tuple(entities, entity_tuple):
     assert entity_tuple in entities, "\n\nExpected: %r\n\nIn actuals: %r" % (entity_tuple, entities)
+
+
+def check_company_tuple(entities, entity_tuple):
+    tuples = [(e.regno, e.name, e.fullname) for e in entities]
+    assert entity_tuple in tuples, "\n\nExpected: %r\n\nIn actuals: %r" % (entity_tuple, tuples)
 
 
 def check_expected_actual_length(expected, actual):
