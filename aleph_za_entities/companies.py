@@ -80,6 +80,7 @@ class CompanyAnalyzer(Analyzer):
         super(CompanyAnalyzer, self).__init__(*args, **kwargs)
         self.entities = []
         self.extractor = CompanyExtractor()
+        self.text_count = 0
 
     def prepare(self):
         self.collections = []
@@ -89,6 +90,8 @@ class CompanyAnalyzer(Analyzer):
         self.disabled = not len(self.collections)
 
     def on_text(self, text):
+        log.debug("%s text index %d", self, self.text_count)
+        self.text_count += 1
         if self.disabled or text is None:
             return
         for company in self.extractor.on_text(text):

@@ -66,13 +66,14 @@ class PersonExtractor(object):
 
 
 class PersonAnalyzer(Analyzer):
-    scheme = 'sa'
+    scheme = 'sa_id'
     origin = 'za_persons'
 
     def __init__(self, *args, **kwargs):
         super(PersonAnalyzer, self).__init__(*args, **kwargs)
         self.entities = []
         self.extractor = PersonExtractor()
+        self.text_count = 0
 
     def prepare(self):
         self.collections = []
@@ -82,12 +83,15 @@ class PersonAnalyzer(Analyzer):
         self.disabled = not len(self.collections)
 
     def on_text(self, text):
+        log.debug("%s text index %d", self, self.text_count)
+        self.text_count += 1
         cleantext = re.sub('\s+', ' ', text, flags=re.MULTILINE)
         for person in self.extractor.on_text(cleantext):
-            self.entities.append((person.regno, person.name, person.presentation))
+            self.entities.append((person.id, person.name, person.presentation))
 
     def load_entity(self, sa_id, name, full):
         identifier = sa_id
+        log.debug("%s Loading %s %s", self, self.scheme, sa_id)
         q = db.session.query(EntityIdentifier)
         q = q.order_by(EntityIdentifier.deleted_at.desc().nullsfirst())
         q = q.filter(EntityIdentifier.scheme == self.scheme)
@@ -113,15 +117,17 @@ class PersonAnalyzer(Analyzer):
             ],
             'company_number': sa_id
         }
+        log.debug("%s Saving %s", self, full)
         entity = Entity.save(data, self.collections)
         return entity.id
 
     def finalize(self):
         if self.disabled:
             return
-
+        log.debug("%s deleting old refs for document %d", self, self.document.id)
         self.document.delete_references(origin=self.origin)
         for sa_id, name, full in self.entities:
+            log.debug("%s Linking %s to document %d", self, sa_id, self.document.id)
             entity_id = self.load_entity(sa_id, name, full)
             ref = Reference()
             ref.document_id = self.document.id
