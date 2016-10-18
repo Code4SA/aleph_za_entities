@@ -77,7 +77,7 @@ class CompanyAnalyzer(Analyzer):
     origin = 'za_company'
 
     def __init__(self, *args, **kwargs):
-        super(Company, self).__init__(*args, **kwargs)
+        super(CompanyAnalyzer, self).__init__(*args, **kwargs)
         self.entities = []
         self.extractor = CompanyExtractor()
 

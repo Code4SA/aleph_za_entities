@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from aleph_za_entities.companies import CompanyExtractor
-from aleph_za_entities.sa_ids import Persons
+from aleph_za_entities.sa_ids import PersonExtractor
 import os
 
 FIXTURES = os.path.join(os.path.dirname(__file__), 'fixtures')
@@ -225,11 +225,11 @@ def test_sa_nids():
     ]
     with open(os.path.join(FIXTURES, 'entities_01.txt')) as f:
         text = f.read()
-        a = Persons(None, None)
-        a.on_text(text)
+        ex = PersonExtractor()
+        entities = ex.on_text(text)
     for e in expected:
-        yield check_said_tuple, a.entities, e
-    yield check_expected_actual_length, expected, a.entities
+        yield check_sa_id_tuple, entities, e
+    yield check_expected_actual_length, expected, entities
 
 
 def test_sa_nids2():
@@ -339,11 +339,11 @@ def test_sa_nids2():
     ]
     with open(os.path.join(FIXTURES, 'entities_03.txt')) as f:
         text = f.read()
-        a = Persons(None, None)
-        a.on_text(text)
+        ex = PersonExtractor()
+        entities = ex.on_text(text)
     for e in expected:
-        yield check_said_tuple, a.entities, e
-    yield check_expected_actual_length, expected, a.entities
+        yield check_sa_id_tuple, entities, e
+    yield check_expected_actual_length, expected, entities
 
 
 def test_sa_nids3():
@@ -373,15 +373,16 @@ def test_sa_nids3():
     ]
     with open(os.path.join(FIXTURES, 'entities_05_names_not_single_word.txt')) as f:
         text = f.read()
-        a = Persons(None, None)
-        a.on_text(text)
+        ex = PersonExtractor()
+        entities = ex.on_text(text)
     for e in expected:
-        yield check_said_tuple, a.entities, e
-    yield check_expected_actual_length, expected, a.entities
+        yield check_sa_id_tuple, entities, e
+    yield check_expected_actual_length, expected, entities
 
 
-def check_said_tuple(entities, entity_tuple):
-    assert entity_tuple in entities, "\n\nExpected: %r\n\nIn actuals: %r" % (entity_tuple, entities)
+def check_sa_id_tuple(entities, entity_tuple):
+    tuples = [(e.id, e.name, e.presentation) for e in entities]
+    assert entity_tuple in tuples, "\n\nExpected: %r\n\nIn actuals: %r" % (entity_tuple, tuples)
 
 
 def check_company_tuple(entities, entity_tuple):
