@@ -33,14 +33,47 @@ v[ao]n|de[nr]?|du|le             # or is one of the common surname prefixes
 """
 
 
-class Persons(Analyzer):
-    scheme = 'sa'
+class Person(object):
+    def __init__(self, name, id, presentation):
+        self.name = name
+        self.id = id
+        self.presentation = presentation
+
+    def __repr__(self):
+        return "<%s: %s>" % (self.__class__.__name__, self.presentation)
+
+
+class PersonExtractor(object):
+    def __init__(self):
+        self.regex = re.compile(REGEX, re.VERBOSE + re.MULTILINE)
+
+    def on_text(self, text):
+        cleantext = re.sub('\s+', ' ', text, flags=re.MULTILINE)
+        matches = self.regex.findall(cleantext)
+        persons = []
+        for match in matches:
+            if match[5]:
+                # Skip partnerships
+                continue
+            sa_id = match[4]
+            if not is_valid_sa_id(sa_id):
+                log.debug("Skipping invalid SA ID %s" % sa_id)
+                continue
+            presentation = match[0]
+            name = match[1]
+            persons.append(Person(name, sa_id, presentation))
+        return persons
+
+
+class PersonAnalyzer(Analyzer):
+    scheme = 'sa_id'
     origin = 'za_persons'
 
     def __init__(self, *args, **kwargs):
-        super(Persons, self).__init__(*args, **kwargs)
+        super(PersonAnalyzer, self).__init__(*args, **kwargs)
         self.entities = []
-        self.re = re.compile(REGEX, re.VERBOSE)
+        self.extractor = PersonExtractor()
+        self.text_count = 0
 
     def prepare(self):
         self.collections = []
@@ -50,25 +83,15 @@ class Persons(Analyzer):
         self.disabled = not len(self.collections)
 
     def on_text(self, text):
+        log.debug("%s text index %d", self, self.text_count)
+        self.text_count += 1
         cleantext = re.sub('\s+', ' ', text, flags=re.MULTILINE)
-        if self.disabled or cleantext is None:
-            return
-        flags = re.MULTILINE
-        matches = self.re.findall(cleantext, flags)
-        for match in matches:
-            if match[5]:
-                # Skip partnerships
-                continue
-            sa_id = match[4]
-            if not is_valid_sa_id(sa_id):
-                log.debug("Skipping invalid SA ID %s" % sa_id)
-                continue
-            full = match[0]
-            name = match[1]
-            self.entities.append((sa_id, name, full))
+        for person in self.extractor.on_text(cleantext):
+            self.entities.append((person.id, person.name, person.presentation))
 
     def load_entity(self, sa_id, name, full):
         identifier = sa_id
+        log.debug("%s Loading %s %s", self, self.scheme, sa_id)
         q = db.session.query(EntityIdentifier)
         q = q.order_by(EntityIdentifier.deleted_at.desc().nullsfirst())
         q = q.filter(EntityIdentifier.scheme == self.scheme)
@@ -94,15 +117,17 @@ class Persons(Analyzer):
             ],
             'company_number': sa_id
         }
+        log.debug("%s Saving %s", self, full)
         entity = Entity.save(data, self.collections)
         return entity.id
 
     def finalize(self):
         if self.disabled:
             return
-
+        log.debug("%s deleting old refs for document %d", self, self.document.id)
         self.document.delete_references(origin=self.origin)
         for sa_id, name, full in self.entities:
+            log.debug("%s Linking %s to document %d", self, sa_id, self.document.id)
             entity_id = self.load_entity(sa_id, name, full)
             ref = Reference()
             ref.document_id = self.document.id
